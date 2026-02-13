@@ -40,12 +40,20 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'candidate', // por enquanto fixo
         ]);
+
+        // Cria automaticamente o perfil candidate
+        $user->candidate()->create([]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->intended(
+            $user->role === 'candidate'
+                ? route('candidate.dashboard', absolute: false)
+                : route('dashboard', absolute: false)
+        );
     }
 }
